@@ -2,19 +2,23 @@
 import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
-  darkMode: ["class"], // Dark mode toggle karein
-  content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"], // Sare files include karein
+  darkMode: ["class"],
+  content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+      },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
       colors: {
-        primary: "#1D4ED8", // Primary color
-        secondary: "#9333EA", // Secondary color
-        accent: "#FACC15", // Accent color
+        primary: "#1D4ED8",
+        secondary: "#9333EA",
+        accent: "#FACC15",
+        background: '#f8fafc',
       },
       screens: {
         tablet: '640px',
@@ -23,5 +27,5 @@ export default {
       },
     },
   },
-  plugins: [tailwindcssAnimate], // Plugin ko import karein
+  plugins: [tailwindcssAnimate],
 };

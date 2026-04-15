@@ -15,6 +15,15 @@ const applicationSchema = new mongoose.Schema({
     type: String,
     enum: ["pending", "accepted", "rejected"],
     default: "pending"
+  },
+  coverLetter: {
+    type: String,
+  },
+  resume: {
+    type: String, // Cloudinary URL
+  },
+  resumeOriginalName: {
+    type: String, // Original file name
   }
 }, { timestamps: true });
 

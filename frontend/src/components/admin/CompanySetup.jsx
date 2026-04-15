@@ -4,18 +4,17 @@ import { Button } from "../ui/button";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
-import axios from "axios";
-import { Company_API_END_POINT } from "../../../utils/constant.js";
+import API from "../../../utils/api"; // ✅ axios replace
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useSelector } from "react-redux";
 import useGetCompanyById from "@/hooks/useGetCompanyById";
 
 const CompanySetup = () => {
+  const params = useParams();
 
-    const params = useParams()
-;
-useGetCompanyById(params.id);
+  useGetCompanyById(params.id);
+
   const [input, setInput] = useState({
     name: "",
     description: "",
@@ -23,76 +22,88 @@ useGetCompanyById(params.id);
     location: "",
     file: null,
   });
-  const {singleCompany} = useSelector(store=>store.company)
-  
-  const navigate = useNavigate()
-  const [loading,setLoading] = useState(false);
+
+  const { singleCompany } = useSelector((store) => store.company);
+
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
   };
 
-  const changeFileHandler = (e) =>{
+  const changeFileHandler = (e) => {
     const file = e.target.files?.[0];
-    setInput({...input,file});
-  }
-  const submitHandler = async(e)=>{
+    setInput({ ...input, file });
+  };
+
+  const submitHandler = async (e) => {
     e.preventDefault();
+
     const formData = new FormData();
-    formData.append("name",input.name);
-    formData.append("description",input.description);
-    formData.append("website",input.website);
-    formData.append("location",input.location);
-    if(input.file){
-        formData.append("file",input.file)
+    formData.append("name", input.name);
+    formData.append("description", input.description);
+    formData.append("website", input.website);
+    formData.append("location", input.location);
+
+    if (input.file) {
+      formData.append("file", input.file);
     }
-    try{
-        setLoading(true)
-   const res = await axios.put(`${Company_API_END_POINT}/update/${params.id}`,formData,{
-    headers:{
-        'Content-Type':'multipart/form-data'
-    },
-    withCredentials:true
-   });
-   if(res.data.success){
-    toast.success(res.data.message);
-    navigate("/admin/companies")
-   }
-    }catch(error){
-        console.log(error);
-        toast.error(error?.response?.data?.message)
-        
-    }finally{
-        setLoading(false);
-    };
-    
-   
-  }
-  useEffect(()=>{
+
+    try {
+      setLoading(true);
+
+      const res = await API.put(
+        `/company/update/${params.id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      ); // ✅ FIXED
+
+      if (res.data.success) {
+        toast.success(res.data.message);
+        navigate("/admin/companies");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error?.response?.data?.message || "Update failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     setInput({
-        name: singleCompany.name||"",
-description: singleCompany.description||"",
-website: singleCompany.website||"",
-location: singleCompany.location||"",
-file: singleCompany.file||null 
-    })
-},[singleCompany]);
+      name: singleCompany?.name || "",
+      description: singleCompany?.description || "",
+      website: singleCompany?.website || "",
+      location: singleCompany?.location || "",
+      file: null,
+    });
+  }, [singleCompany]);
 
   return (
     <div>
       <Navbar />
+
       <div className="max-w-xl mx-auto my-10">
         <form onSubmit={submitHandler}>
           <div className="flex items-center gap-5 p-8">
             <Button
-            onClick={()=>navigate("/admin/companies")}
+              onClick={() => navigate("/admin/companies")}
               variant="outline"
               className="flex items-center gap-2 text-gray-500 font-semibold"
             >
               <ArrowLeft />
               <span>Back</span>
             </Button>
+
             <h1 className="font-bold text-xl">Company Setup</h1>
           </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Company Name</Label>
@@ -103,6 +114,7 @@ file: singleCompany.file||null
                 onChange={changeEventHandler}
               />
             </div>
+
             <div>
               <Label>Description</Label>
               <Input
@@ -112,6 +124,7 @@ file: singleCompany.file||null
                 onChange={changeEventHandler}
               />
             </div>
+
             <div>
               <Label>Website</Label>
               <Input
@@ -121,6 +134,7 @@ file: singleCompany.file||null
                 onChange={changeEventHandler}
               />
             </div>
+
             <div>
               <Label>Location</Label>
               <Input
@@ -130,6 +144,7 @@ file: singleCompany.file||null
                 onChange={changeEventHandler}
               />
             </div>
+
             <div>
               <Label>Logo</Label>
               <Input
@@ -139,9 +154,20 @@ file: singleCompany.file||null
               />
             </div>
           </div>
-          
+
           {
-            loading ? <Button className="w-full my-4" > <Loader2 className="mr-2 h-4 w-4 animate-spin"/>Please wait</Button>:<Button type="submit" className="w-full mt-8">Update</Button>
+            loading
+              ? (
+                <Button className="w-full my-4">
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Please wait
+                </Button>
+              )
+              : (
+                <Button type="submit" className="w-full mt-8">
+                  Update
+                </Button>
+              )
           }
 
         </form>

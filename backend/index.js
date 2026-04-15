@@ -20,17 +20,21 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// ✅ 🔥 FIXED CORS (IMPORTANT)
-app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://jobwebsite-youtube-1.onrender.com"
-  ],
-  credentials: true
-}));
+// ✅ CORS (localhost)
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 
-// ✅ Handle preflight requests (IMPORTANT)
-app.options("*", cors());
+app.options(
+  "*",
+  cors({
+   origin: ["http://localhost:5173", "http://localhost:5174"],
+    credentials: true,
+  })
+);
 
 // ✅ API Routes
 app.use("/api/v1/user", userRoute);
@@ -38,17 +42,24 @@ app.use("/api/v1/company", companyRoute);
 app.use("/api/v1/job", jobRoute);
 app.use("/api/v1/application", applicationRoute);
 
-// ✅ Serve frontend
-app.use(express.static(path.join(__dirname, "/frontend/dist")));
-
-app.get("*", (_, res) => {
-  res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
+// ✅ Test route (IMPORTANT for debugging)
+app.get("/", (req, res) => {
+  res.send("API WORKING ✅");
 });
+
+// ✅ ONLY for production (Render)
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "/frontend/dist")));
+
+  app.get("*", (_, res) => {
+    res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
+  });
+}
 
 // ✅ PORT
 const PORT = process.env.PORT || 5001;
 
-// ✅ Connect DB first, then start server
+// ✅ Start server
 connectDB()
   .then(() => {
     app.listen(PORT, () => {

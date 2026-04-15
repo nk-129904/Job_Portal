@@ -1,11 +1,15 @@
 import { Application } from "../models/application.model.js";
 import { Job } from "../models/job.model.js";
+import cloudinary from "../utils/cloudinary.js";
+import getDataUri from "../utils/datauri.js";
 
 // ================= APPLY JOB =================
 export const applyJob = async (req, res) => {
   try {
     const userId = req.id;
     const jobId = req.params.id;
+    const { coverLetter } = req.body;
+    const file = req.file;
 
     if (!jobId) {
       return res.status(400).json({
@@ -37,10 +41,26 @@ export const applyJob = async (req, res) => {
       });
     }
 
+    // Handle File Upload if provided
+    let resumeUrl = "";
+    let resumeOriginalName = "";
+    if (file) {
+      const fileUri = getDataUri(file);
+      const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+        resource_type: "auto",
+        original_filename: file.originalname
+      });
+      resumeUrl = cloudResponse.secure_url;
+      resumeOriginalName = file.originalname;
+    }
+
     // create application
     const newApplication = await Application.create({
       job: jobId,
       applicant: userId,
+      coverLetter: coverLetter || "",
+      resume: resumeUrl,
+      resumeOriginalName: resumeOriginalName,
     });
 
     job.applications.push(newApplication._id);
@@ -54,7 +74,7 @@ export const applyJob = async (req, res) => {
   } catch (error) {
     console.log(error);
     return res.status(500).json({
-      message: "Server error",
+      message: String(error),
       success: false,
     });
   }
